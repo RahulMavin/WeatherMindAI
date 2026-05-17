@@ -7,5 +7,5 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  base: "/WeatherMindAI/",
+  base: "/weathermindai/",
 })
