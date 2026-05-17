@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+/* Hide scrollbars on hourly row but keep scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better tap targets on mobile */
+button {
+  -webkit-tap-highlight-color: transparent;
+}
