@@ -1,0 +1,15 @@
+# Environment files — never push API keys
+backend/.env
+frontend/.env
+.env
+
+# Python cache
+backend/__pycache__/
+backend/*.pyc
+
+# Node modules
+frontend/node_modules/
+node_modules/
+
+# Build output
+frontend/dist/
