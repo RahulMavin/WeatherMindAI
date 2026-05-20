@@ -8,8 +8,7 @@ import os
 # Load environment variables
 load_dotenv()
 
-# Configure Groq client
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
 
 # Create FastAPI app
 app = FastAPI()
@@ -22,7 +21,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+# Configure Groq client
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 # Define request body structure
 class AskRequest(BaseModel):
     question: str

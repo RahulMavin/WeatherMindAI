@@ -12,8 +12,14 @@ function AIBox({ city, temp, condition, unit }) {
     setLoading(true);
     setAnswer("");
 
+    // Determine backend URL automatically based on your local environment
+    const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    const backendUrl = isLocalhost 
+      ? "http://127.0.0.1:8000/ask" 
+      : "https://weathermindai-backend.onrender.com/ask";
+
     try {
-      const response = await fetch("https://weathermindai-backend.onrender.com/ask", {
+      const response = await fetch(backendUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -26,9 +32,15 @@ function AIBox({ city, temp, condition, unit }) {
       });
 
       const data = await response.json();
-      setAnswer(data.answer);
+      
+      // Handle fallback if backend errors out cleanly or throws an exception string
+      if (data.answer) {
+        setAnswer(data.answer);
+      } else {
+        setAnswer("Received an unexpected response from the weather assistant.");
+      }
     } catch (error) {
-      setAnswer("Could not connect to AI backend. Make sure the backend server is running.");
+      setAnswer("Could not connect to AI backend. Make sure your server or deployment is active.");
     } finally {
       setLoading(false);
       setQuestion("");
