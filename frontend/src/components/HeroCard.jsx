@@ -5,6 +5,7 @@ function HeroCard({ city, temp, condition, feels, humidity, icon, type, unit }) 
     rainy:  "from-blue-700 via-blue-500 to-blue-400",
     stormy: "from-purple-900 via-purple-700 to-gray-600",
     snowy:  "from-blue-400 via-cyan-300 to-blue-200",
+    night:  "from-indigo-900 via-indigo-700 to-blue-900",
   };
 
   const bg = backgrounds[type] || backgrounds.sunny;

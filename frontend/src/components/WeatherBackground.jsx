@@ -59,6 +59,17 @@ function WeatherBackground({ type }) {
             width:   Math.random() * 30 + 20,
           });
         }
+        } else if (type === "night") {
+        for (let i = 0; i < 60; i++) {
+          particles.push({
+            x:       Math.random() * canvas.width,
+            y:       Math.random() * canvas.height,
+            radius:  Math.random() * 1.5 + 0.5,
+            opacity: Math.random() * 0.8 + 0.2,
+            twinkle: Math.random() * 0.02 + 0.005,
+            phase:   Math.random() * Math.PI * 2,
+          });
+        }
       } else if (type === "cloudy") {
         for (let i = 0; i < 5; i++) {
           particles.push({
@@ -147,8 +158,22 @@ function WeatherBackground({ type }) {
       else if (type === "snowy") drawSnow();
       else if (type === "sunny") drawSunny();
       else if (type === "cloudy") drawCloudy();
+      else if (type === "night") drawNight(ctx, canvas, particles);
       else ctx.clearRect(0, 0, canvas.width, canvas.height);
       animationId = requestAnimationFrame(animate);
+    }
+    // Draw night stars
+    function drawNight() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const time = Date.now() / 1000;
+      particles.forEach(p => {
+        const twinkle = Math.sin(time * p.twinkle * 60 + p.phase);
+        const opacity = p.opacity * (0.6 + 0.4 * twinkle);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+        ctx.fill();
+      });
     }
 
     createParticles();

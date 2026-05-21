@@ -14,22 +14,41 @@ import WeatherSummary from "./components/WeatherSummary";
 const API_KEY = import.meta.env.VITE_WEATHER_KEY;
 const BASE_URL = "https://api.openweathermap.org/data/2.5";
 
-function getWeatherType(code) {
+function getWeatherType(code, sunrise, sunset, timezone) {
   if (code >= 200 && code < 300) return "stormy";
   if (code >= 300 && code < 600) return "rainy";
   if (code >= 600 && code < 700) return "snowy";
   if (code >= 700 && code < 800) return "cloudy";
-  if (code === 800)               return "sunny";
+  if (code === 800) {
+    // Check if it's currently night time
+    if (sunrise && sunset && timezone !== undefined) {
+      const nowUtc = Math.floor(Date.now() / 1000);
+      const localNow = nowUtc + timezone;
+      const localSunrise = sunrise + timezone;
+      const localSunset = sunset + timezone;
+      if (localNow < localSunrise || localNow > localSunset) return "night";
+    }
+    return "sunny";
+  }
   return "cloudy";
 }
 
-function getIcon(code) {
+function getIcon(code, sunrise, sunset, timezone) {
   if (code >= 200 && code < 300) return "⛈️";
   if (code >= 300 && code < 400) return "🌦️";
   if (code >= 400 && code < 600) return "🌧️";
   if (code >= 600 && code < 700) return "❄️";
   if (code >= 700 && code < 800) return "🌫️";
-  if (code === 800)               return "☀️";
+  if (code === 800) {
+    if (sunrise && sunset && timezone !== undefined) {
+      const nowUtc = Math.floor(Date.now() / 1000);
+      const localNow = nowUtc + timezone;
+      const localSunrise = sunrise + timezone;
+      const localSunset = sunset + timezone;
+      if (localNow < localSunrise || localNow > localSunset) return "🌙";
+    }
+    return "☀️";
+  }
   if (code === 801)               return "🌤️";
   if (code === 802)               return "⛅";
   return "☁️";
@@ -46,6 +65,7 @@ const pageBgs = {
   rainy:  "from-blue-900 via-gray-900 to-gray-900",
   stormy: "from-purple-950 via-gray-900 to-gray-900",
   snowy:  "from-blue-800 via-gray-900 to-gray-900",
+  night:  "from-indigo-950 via-gray-900 to-gray-900",
 };
 
 function toCelsius(f) {
@@ -141,7 +161,10 @@ function App() {
 
   function processData(current, forecast) {
     const code = current.weather[0].id;
-    const type = getWeatherType(code);
+    const sr = current.sys.sunrise;
+    const ss = current.sys.sunset;
+    const tz = current.timezone;
+    const type = getWeatherType(code, sr, ss, tz);
     setWeatherType(type);
 
     setWeather({
@@ -153,7 +176,7 @@ function App() {
         .split(" ")
         .map(w => w.charAt(0).toUpperCase() + w.slice(1))
         .join(" "),
-      icon: getIcon(code),
+      icon: getIcon(code, sr, ss, tz),
       type,
     });
 
@@ -184,7 +207,7 @@ function App() {
       time: new Date(item.dt * 1000).toLocaleTimeString([], {
         hour: "numeric", hour12: true
       }),
-      icon: getIcon(item.weather[0].id),
+      icon: getIcon(item.weather[0].id, sr, ss, tz),
       temp: Math.round(item.main.temp),
     }));
     setHours(hourlyData);
@@ -194,7 +217,7 @@ function App() {
       .slice(0, 5)
       .map(item => ({
         name: getDayName(item.dt),
-        icon: getIcon(item.weather[0].id),
+        icon: getIcon(item.weather[0].id, sr, ss, tz),
         high: Math.round(item.main.temp_max),
         low:  Math.round(item.main.temp_min),
         type: getWeatherType(item.weather[0].id),
