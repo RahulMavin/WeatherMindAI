@@ -10,6 +10,7 @@ import WindInfo from "./components/WindInfo";
 import WeatherBackground from "./components/WeatherBackground";
 import AirQuality from "./components/AirQuality";
 import WeatherSummary from "./components/WeatherSummary";
+import TempChart from "./components/TempChart";
 
 const API_KEY = import.meta.env.VITE_WEATHER_KEY;
 const BASE_URL = "https://api.openweathermap.org/data/2.5";
@@ -396,6 +397,7 @@ function App() {
             <StatsRow stats={stats} />
             <HourlyRow hours={hours} isCelsius={isCelsius} />
             <ForecastRow days={days} isCelsius={isCelsius} />
+            <TempChart days={days} isCelsius={isCelsius} />
             <SunriseSunset
               sunrise={sunData.sunrise}
               sunset={sunData.sunset}
