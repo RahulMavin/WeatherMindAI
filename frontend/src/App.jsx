@@ -21,12 +21,11 @@ function getWeatherType(code, sunrise, sunset, timezone) {
   if (code >= 600 && code < 700) return "snowy";
   if (code >= 700 && code < 800) return "cloudy";
   if (code === 800) {
-    // Check if it's currently night time
     if (sunrise && sunset && timezone !== undefined) {
-      const nowUtc = Math.floor(Date.now() / 1000);
-      const localNow = nowUtc + timezone;
+      const nowUtc      = Math.floor(Date.now() / 1000);
+      const localNow    = nowUtc + timezone;
       const localSunrise = sunrise + timezone;
-      const localSunset = sunset + timezone;
+      const localSunset  = sunset + timezone;
       if (localNow < localSunrise || localNow > localSunset) return "night";
     }
     return "sunny";
@@ -42,16 +41,16 @@ function getIcon(code, sunrise, sunset, timezone) {
   if (code >= 700 && code < 800) return "🌫️";
   if (code === 800) {
     if (sunrise && sunset && timezone !== undefined) {
-      const nowUtc = Math.floor(Date.now() / 1000);
-      const localNow = nowUtc + timezone;
+      const nowUtc      = Math.floor(Date.now() / 1000);
+      const localNow    = nowUtc + timezone;
       const localSunrise = sunrise + timezone;
-      const localSunset = sunset + timezone;
+      const localSunset  = sunset + timezone;
       if (localNow < localSunrise || localNow > localSunset) return "🌙";
     }
     return "☀️";
   }
-  if (code === 801)               return "🌤️";
-  if (code === 802)               return "⛅";
+  if (code === 801) return "🌤️";
+  if (code === 802) return "⛅";
   return "☁️";
 }
 
@@ -85,6 +84,7 @@ function App() {
   const [search, setSearch]             = useState("");
   const [loading, setLoading]           = useState(true);
   const [error, setError]               = useState("");
+  const [lastUpdated, setLastUpdated]   = useState("");
   const [weatherType, setWeatherType]   = useState("sunny");
   const [isCelsius, setIsCelsius]       = useState(false);
   const [recentCities, setRecentCities] = useState(() => {
@@ -104,7 +104,6 @@ function App() {
     });
   }
 
-  // Fetch AQI separately using coordinates
   async function fetchAQI(lat, lon) {
     try {
       const res = await axios.get(
@@ -133,7 +132,6 @@ function App() {
       });
       processData(current.data, forecast.data);
       addToRecent(current.data.name);
-      // Fetch AQI using the city coordinates
       fetchAQI(current.data.coord.lat, current.data.coord.lon);
     } catch (err) {
       setError("City not found. Please check the spelling and try again.");
@@ -162,9 +160,9 @@ function App() {
 
   function processData(current, forecast) {
     const code = current.weather[0].id;
-    const sr = current.sys.sunrise;
-    const ss = current.sys.sunset;
-    const tz = current.timezone;
+    const sr   = current.sys.sunrise;
+    const ss   = current.sys.sunset;
+    const tz   = current.timezone;
     const type = getWeatherType(code, sr, ss, tz);
     setWeatherType(type);
 
@@ -221,9 +219,16 @@ function App() {
         icon: getIcon(item.weather[0].id, sr, ss, tz),
         high: Math.round(item.main.temp_max),
         low:  Math.round(item.main.temp_min),
-        type: getWeatherType(item.weather[0].id),
+        type: getWeatherType(item.weather[0].id, sr, ss, tz),
       }));
     setDays(dailyData);
+
+    // Set last updated timestamp
+    const now = new Date();
+    setLastUpdated(
+      now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true })
+    );
+
     setLoading(false);
   }
 
@@ -248,6 +253,7 @@ function App() {
     if (search.trim()) {
       fetchByCity(search.trim());
       setSearch("");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }
 
@@ -256,11 +262,11 @@ function App() {
     const nowUtc  = Math.floor(Date.now() / 1000);
     const localMs = (nowUtc + sunData.timezone) * 1000;
     const d       = new Date(localMs);
-    let hours     = d.getUTCHours();
+    let hrs       = d.getUTCHours();
     const minutes = String(d.getUTCMinutes()).padStart(2, "0");
-    const ampm    = hours >= 12 ? "PM" : "AM";
-    hours         = hours % 12 || 12;
-    const time    = `${hours}:${minutes} ${ampm}`;
+    const ampm    = hrs >= 12 ? "PM" : "AM";
+    hrs           = hrs % 12 || 12;
+    const time    = `${hrs}:${minutes} ${ampm}`;
     const date    = d.toLocaleDateString("en-US", {
       weekday: "long", month: "long", day: "numeric", timeZone: "UTC"
     });
@@ -276,7 +282,7 @@ function App() {
       {/* Animated Weather Background */}
       <WeatherBackground type={weatherType} />
 
-      {/* App Content — sits above canvas */}
+      {/* App Content */}
       <div className="relative max-w-xl mx-auto p-4 pb-8" style={{ zIndex: 1 }}>
 
         {/* Header */}
@@ -285,11 +291,14 @@ function App() {
             <h1 className="text-white text-xl font-bold tracking-tight">
               WeatherMind AI 🌤️
             </h1>
-            <span
-              style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, letterSpacing: "0.08em", color: "#a78bfa" }}
-              className="text-sm tracking-widest"
-            >
-              🦉 owlAlphaX
+            <span className="flex items-center gap-1 text-sm">
+              🦉{" "}
+              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 300, fontStyle: "italic", color: "white" }}>
+                owlAlpha
+              </span>
+              <span style={{ fontFamily: "'Raleway', sans-serif", fontWeight: 200, fontStyle: "normal", color: "#a78bfa" }}>
+                X
+              </span>
             </span>
           </div>
           <div className="flex flex-col items-end gap-1">
@@ -300,7 +309,26 @@ function App() {
               >
                 {isCelsius ? "°C → °F" : "°F → °C"}
               </button>
-              <span className="text-white/60 text-sm font-medium">{city}</span>
+              <div className="flex flex-col items-end">
+                <div className="flex items-center gap-1">
+                  <span className="text-white/60 text-sm font-medium">{city}</span>
+                  {weather && (
+                    <button
+                      onClick={() => {
+                        fetchByCity(city);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                      className="bg-white/10 hover:bg-white/20 text-white/60 hover:text-white text-xs px-2 py-1 rounded-lg transition-all"
+                      title="Refresh weather"
+                    >
+                      ↻
+                    </button>
+                  )}
+                </div>
+                {lastUpdated && (
+                  <span className="text-white/30 text-xs">Updated {lastUpdated}</span>
+                )}
+              </div>
             </div>
             {time && (
               <div className="flex flex-col items-end">
@@ -348,7 +376,10 @@ function App() {
             {recentCities.map((c, i) => (
               <button
                 key={i}
-                onClick={() => fetchByCity(c)}
+                onClick={() => {
+                  fetchByCity(c);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
                 className="flex-shrink-0 bg-white/10 hover:bg-white/20 border border-white/15 text-white/70 hover:text-white text-xs px-3 py-1.5 rounded-full transition-all"
               >
                 {c}
@@ -424,15 +455,25 @@ function App() {
         )}
 
         {/* Branded Footer */}
-        <div className="mt-8 pt-4 border-t border-white/10 flex flex-col items-center justify-center gap-1">
-          <span
-            style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, letterSpacing: "0.08em", color: "#a78bfa" }}
-            className="text-base tracking-widest"
-          >
-            🦉 owlAlphaX
+        <div className="mt-8 pt-4 border-t border-white/10 flex flex-col items-center justify-center gap-2">
+          <span className="flex items-center gap-1 text-lg">
+            🦉{" "}
+            <span style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 300, fontStyle: "italic", color: "white" }}>
+              owlAlpha
+            </span>
+            <span style={{ fontFamily: "'Raleway', sans-serif", fontWeight: 200, fontStyle: "normal", color: "#a78bfa" }}>
+              X
+            </span>
           </span>
+          <div className="flex items-center gap-2 flex-wrap justify-center">
+            <span className="bg-white/5 border border-white/10 text-white/40 text-xs px-2 py-0.5 rounded-full">React</span>
+            <span className="bg-white/5 border border-white/10 text-white/40 text-xs px-2 py-0.5 rounded-full">FastAPI</span>
+            <span className="bg-white/5 border border-white/10 text-white/40 text-xs px-2 py-0.5 rounded-full">Groq AI</span>
+            <span className="bg-white/5 border border-white/10 text-white/40 text-xs px-2 py-0.5 rounded-full">Python</span>
+            <span className="bg-white/5 border border-white/10 text-white/40 text-xs px-2 py-0.5 rounded-full">Tailwind</span>
+          </div>
           <span className="text-white/30 text-xs">
-            © {new Date().getFullYear()} owlAlphaX. All rights reserved.
+            © {new Date().getFullYear()} owlAlpha X. All rights reserved.
           </span>
         </div>
 
