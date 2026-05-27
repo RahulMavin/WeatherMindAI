@@ -465,13 +465,7 @@ function App() {
               X
             </span>
           </span>
-          <div className="flex items-center gap-2 flex-wrap justify-center">
-            <span className="bg-white/5 border border-white/10 text-white/40 text-xs px-2 py-0.5 rounded-full">React</span>
-            <span className="bg-white/5 border border-white/10 text-white/40 text-xs px-2 py-0.5 rounded-full">FastAPI</span>
-            <span className="bg-white/5 border border-white/10 text-white/40 text-xs px-2 py-0.5 rounded-full">Groq AI</span>
-            <span className="bg-white/5 border border-white/10 text-white/40 text-xs px-2 py-0.5 rounded-full">Python</span>
-            <span className="bg-white/5 border border-white/10 text-white/40 text-xs px-2 py-0.5 rounded-full">Tailwind</span>
-          </div>
+          
           <span className="text-white/30 text-xs">
             © {new Date().getFullYear()} owlAlpha X. All rights reserved.
           </span>
